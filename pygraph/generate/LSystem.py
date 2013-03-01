@@ -1,3 +1,5 @@
+import random
+
 class LSystem:
     """A class that instantiates an Lsystem, which can be used to generate graphics or simply grammars
     
@@ -39,11 +41,29 @@ class LSystem:
         else:
             self.rules[symbol] = [[factor] + product_list]
 
-    def expand(self, symbol_list):
-        pass
+    def expand(self, symbol):
+        if(symbol.lower() == symbol):
+            # it's a constant, so it expands to itself
+            return [symbol]
+
+        total = [0]
+        for product in self.rules[symbol]:
+            total.append(product[0] + total[len(total)-1])
+
+        choice = random.randint(1, total[len(total) - 1])
+        for i, prob in enumerate(total[1:]):
+            if (choice <= prob):
+                return self.rules[symbol][i][1:]
 
     def generate(self, symbol_list, depth):
-        pass
+        current = symbol_list
+        new = []
+        for i in range(depth):
+            for symbol in current:
+                new += self.expand(symbol)
+            current = new
+            new = []
+        return current
 
     def setRasterFunction(self, symbol, raster_function):
         pass
