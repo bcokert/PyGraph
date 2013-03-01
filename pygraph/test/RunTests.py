@@ -45,8 +45,9 @@ class customResults(unittest.TestResult):
         for test, err in errors:
             self.stream.writeln("%s %s: %s %s" % ('='*10, flavour,self.getDescription(test), '='*(60-len(self.getDescription(test)))))
 
-            regexp = re.search('.+\n.+(line \d+.+)\n\s*(.+)\n(.+)', err)
-            self.stream.writeln("%s\n%s: %s\n" % (regexp.group(3), regexp.group(1), regexp.group(2)))
+            #regexp = re.search('.+\n.+(line \d+.+)\n\s*(.+)\n(.+)', err)
+            #self.stream.writeln("%s\n%s: %s\n" % (regexp.group(3), regexp.group(1), regexp.group(2)))
+            self.stream.writeln(err)
 
     def startTest(self, test):
         unittest.TestResult.startTest(self, test)

@@ -4,7 +4,7 @@ class LSystem:
     :Methods:
         - 'addRule': Adds a new production rule to the L-System, and computes it's probability
         - 'generate': Expands a starting symbol multiple iterations, returning the resulting symbol list
-        - 'expand': Expands a symbol list once. generate will call this multiple times iteratively
+        - 'expand': Expands a symbol. generate will call this multiple times iteratively
         - 'setRasterFunction': Associates a function pointer with a symbol. Functions 'implement' each symbol
         - 'rasterize': Goes through the given symbol list and calls the function for each symbol
     
@@ -24,12 +24,20 @@ class LSystem:
     >>> lsys.rasterize(generated) # Calls the functions, which would presumably draw a tree if we had rotations and a stack implemented (use symbols to push and pop from a stack)
     """
     
-    def __init(self):
-        self.rules = []
-        self.raster_functions = dict()
+    def __init__(self):
+        self.rules = {}
+        self.raster_functions = {}
 
-    def addRule(self, symbol, product_list):
-        pass
+    def addRule(self, symbol, product_list, factor=1):
+        product_index = 0
+        if (symbol in self.rules):
+            product = filter(lambda x: x[1][1:] == product_list, enumerate(self.rules[symbol])) # returns tuple(index_in_list_of_lists_of_symbols, [symbols_of_product])
+            if (product):
+                self.rules[symbol][product[0][0]][0] += factor
+            else:
+                self.rules[symbol].append([factor] + product_list)
+        else:
+            self.rules[symbol] = [[factor] + product_list]
 
     def expand(self, symbol_list):
         pass
