@@ -51,7 +51,6 @@ class TestLSystem(unittest.TestCase):
         self.lsys.addRule('Q', ['R', 'q', 'Q', 'R'])
         self.lsys.addRule('R', ['S', 't'])
         self.lsys.addRule('S', ['cat'])
-        print self.lsys.generate(['Q', 'dog'], 5)
         self.assertEqual(self.lsys.generate(['Q', 'dog'], 5),
                 ['cat', 't', 'q', 'cat', 't', 'q', 'cat', 't', 'q', 'S', 't', 'q', 'R', 'q', 'Q', 'R', 'S', 't', 'cat', 't', 'cat', 't', 'cat', 't', 'dog'])
 

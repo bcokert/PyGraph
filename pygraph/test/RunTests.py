@@ -22,6 +22,9 @@ addTest('pygraph.test.render.Renderer')
 
 """Suite_LSystem"""
 addTest('pygraph.test.generate.LSystem')
+
+"""Suite_SimpleTurtle"""
+addTest('pygraph.test.generate.SimpleTurtle')
 #####################################################################################
 
 class customResults(unittest.TestResult):
