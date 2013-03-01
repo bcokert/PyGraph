@@ -66,7 +66,8 @@ class LSystem:
         return current
 
     def setRasterFunction(self, symbol, raster_function):
-        pass
+        self.raster_functions[symbol] = raster_function
 
     def rasterize(self, symbol_list):
-        pass
+        for symbol in symbol_list:
+            self.raster_functions[symbol]()

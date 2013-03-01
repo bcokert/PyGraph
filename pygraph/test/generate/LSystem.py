@@ -74,7 +74,43 @@ class TestLSystem(unittest.TestCase):
         self.assertGreater(count, 17, "A did not expand to j often enough (%s/20), given that it has a 99.9%% chance of doing so" % (count))
 
     def test_setRasterFunction(self):
-        self.fail("Not yet Implemented")
+        self.lsys.addRule('A', ['i', 'B'])
+        def f(): return 1
+        def g(): return 2
+        def h(): return 3
+        self.lsys.setRasterFunction('A', f)
+        self.lsys.setRasterFunction('i', g)
+        self.lsys.setRasterFunction('B', h)
+
+        self.assertIn('A', self.lsys.raster_functions)
+        self.assertIn('i', self.lsys.raster_functions)
+        self.assertIn('B', self.lsys.raster_functions)
+
+        self.assertEqual(self.lsys.raster_functions['A'], f)
+        self.assertEqual(self.lsys.raster_functions['i'], g)
+        self.assertEqual(self.lsys.raster_functions['B'], h)
+        self.assertEqual(self.lsys.raster_functions['A'](), f())
+        self.assertEqual(self.lsys.raster_functions['i'](), g())
+        self.assertEqual(self.lsys.raster_functions['B'](), h())
 
     def test_rasterize(self):
-        self.fail("Not yet Implemented")
+        self.lsys.addRule('A', ['i', 'B'])
+        self.lsys.addRule('B', ['j', 'C'])
+        self.lsys.addRule('C', ['k', 'D'])
+        self.lsys.addRule('D', ['l', 'E'])
+        self.lsys.addRule('E', ['m', 'A'])
+        
+        global_scope = []
+        self.lsys.setRasterFunction('i', lambda : global_scope.append('i_'))
+        self.lsys.setRasterFunction('j', lambda : global_scope.append('j_'))
+        self.lsys.setRasterFunction('k', lambda : global_scope.append('k_'))
+        self.lsys.setRasterFunction('l', lambda : global_scope.append('l_'))
+        self.lsys.setRasterFunction('m', lambda : global_scope.append('m_'))
+        self.lsys.setRasterFunction('A', lambda : global_scope.append('A_'))
+        self.lsys.setRasterFunction('B', lambda : global_scope.append('B_'))
+        self.lsys.setRasterFunction('C', lambda : global_scope.append('C_'))
+        self.lsys.setRasterFunction('D', lambda : global_scope.append('D_'))
+        self.lsys.setRasterFunction('E', lambda : global_scope.append('E_'))
+
+        self.lsys.rasterize(self.lsys.generate(['A', 'A'], 3))
+        self.assertEqual(global_scope, ['i_', 'j_', 'k_', 'D_', 'i_', 'j_', 'k_', 'D_'])
