@@ -4,14 +4,16 @@ from pygraph.generate.LSystem import LSystem
 from datetime import datetime
 import cProfile
 
-generation_depth = 6
+generation_depth = 7
 
 cProfile.run("renderer = Renderer(1000, 1000)")
 cProfile.run("turtle = SimpleTurtle(10, 999, 65, renderer)")
 cProfile.run("lsys = LSystem()")
 
 lsys.addRule('X', ['F', 'l', 'p', 'p', 'X', 'o', 'r', 'X', 'o', 'r', 'F', 'p', 'r', 'F', 'X', 'o', 'l', 'X'])
-lsys.addRule('F', ['F', 'F'])
+lsys.addRule('F', ['F', 'F'], 18)
+lsys.addRule('F', ['F', 'r', 'F'])
+lsys.addRule('F', ['F', 'l', 'F'])
 
 lsys.setRasterFunction('F', turtle.draw)
 lsys.setRasterFunction('X', lambda : 1)

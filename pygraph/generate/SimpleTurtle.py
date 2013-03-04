@@ -34,13 +34,13 @@ class SimpleTurtle:
         self.shapes = BasicShapes(renderer.buffer_x, renderer.buffer_y)
         self.stack = []
 
-    def turnRight(self, angle=25.0):
+    def turnRight(self, angle=30.0):
         self.angle -= angle
         while (self.angle < 0.0):
             self.angle += 360.0
         return self.angle
 
-    def turnLeft(self, angle=25.0):
+    def turnLeft(self, angle=30.0):
         self.angle += angle
         while (self.angle >= 360.0):
             self.angle -= 360.0
