@@ -27,7 +27,7 @@ class Renderer:
     def __init__(self, buffer_x, buffer_y):
         self.writer = PNGWriter()
         self.background_color = [255, 255, 255]
-        self.pixels = [sum([self.background_color for x in range(buffer_x)], []) for y in range(buffer_y)]
+        self.pixels = [self.background_color*buffer_x for y in range(buffer_y)]
         self.buffer_x = buffer_x
         self.buffer_y = buffer_y
 
@@ -49,17 +49,15 @@ class Renderer:
         return self.background_color
 
     def drawOver(self, pixels, x_orig = 0, y_orig = 0):
-        for y in range(self.buffer_y):
-            validx = filter(lambda pix: pix[1] == y - y_orig, pixels)
-            for x in range(self.buffer_x):
-                validy = filter(lambda pix: pix[0] == x - x_orig, validx)
-                if (len(validy) > 0):
-                    self.pixels[y][3*x:3*x+3] = validy[0][2]
+        for pix in pixels:
+            eff_x = pix[0] + x_orig
+            eff_y = pix[1] + y_orig
+            if (eff_x >= 0 and eff_x <= (self.buffer_x - 1) and eff_y >= 0 and eff_y <= (self.buffer_y - 1)):
+                self.pixels[eff_y][3*eff_x:3*eff_x+3] = pix[2]
 
     def drawUnder(self, pixels, x_orig = 0, y_orig = 0):
-        for y in range(self.buffer_y):
-            validx = filter(lambda pix: pix[1] == y - y_orig, pixels)
-            for x in range(self.buffer_x):
-                validy = filter(lambda pix: pix[0] == x - x_orig, validx)
-                if (len(validy) > 0 and self.pixels[y][3*x:3*x+3] == self.background_color):
-                    self.pixels[y][3*x:3*x+3] = validy[0][2]
+        for pix in pixels:
+            eff_x = pix[0] + x_orig
+            eff_y = pix[1] + y_orig
+            if (self.pixels[eff_y][3*eff_x:3*eff_x+3] == self.background_color and eff_x >= 0 and eff_x <= (self.buffer_x - 1) and eff_y >= 0 and eff_y <= (self.buffer_y - 1)):
+                self.pixels[eff_y][3*eff_x:3*eff_x+3] = pix[2]

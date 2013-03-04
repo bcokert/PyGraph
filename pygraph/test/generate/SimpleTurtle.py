@@ -63,7 +63,7 @@ class TestSimpleTurtle(unittest.TestCase):
         self.turtle.pop()
         self.turtle.turnLeft(45)
         self.turtle.draw(3)
-        self.renderer.render('./turtle_integration.png')
+        self.renderer.render('./integration_turtleDrawing.png')
 
         for i in [2, 7, 8, 9, 10]:
             self.assertEqual(self.renderer.pixels[i], [255, 255, 255] +  [0, 0, 0] + [255, 255, 255]*9 + [0, 0, 0] + [255, 255, 255]*8)

@@ -57,7 +57,7 @@ class SimpleTurtle:
         self.y = ypos
         self.angle = float(angle)
 
-    def draw(self, distance=10):
+    def draw(self, distance=5):
         newx = int(round(float(self.x) + math.cos(math.radians(self.angle)) * float(distance)))
         newy = int(round(float(self.y) - math.sin(math.radians(self.angle)) * float(distance)))
         self.renderer.drawOver(self.shapes.drawLine(self.x, self.y, newx, newy, [0,0,0]))
