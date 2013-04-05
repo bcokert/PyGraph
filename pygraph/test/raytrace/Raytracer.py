@@ -62,7 +62,9 @@ class TestRaytracer(unittest.TestCase):
         self.assertEqual(self.raytracer.dotProduct([1, 2, 3], [4, 5, 6]), 32.0)
 
     def test_calculateColor(self):
-        self.assertEqual(self.raytracer.calculateColor([0.0,0.0,0.0], 16), [200, 0, 0])
+        self.assertEqual(self.raytracer.calculateColor([0.0,0.0,0.0], 1), [200, 0, 0])
+        self.assertEqual(self.raytracer.calculateColor([0.0,0.0,0.0], 2), [100, 0, 0])
+        self.assertEqual(self.raytracer.calculateColor([0.0,0.0,0.0], 1.5), [150, 0, 0])
 
     def test_render(self):
         self.raytracer.setOutput('test_render_output.png', [500, 500])
@@ -74,7 +76,7 @@ class TestRaytracer(unittest.TestCase):
     def test_findCollision(self):
         self.raytracer.addSphere([2.0, 0.0, 0.0], 1)
         self.raytracer.setCamera([0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0], 70)
-        self.assertEqual(self.raytracer.findCollision([1.0, 0.0, 0.0]), 1.0)
+        self.assertEqual(self.raytracer.findCollision([1.0, 0.0, 0.0]), [1.0, [[2.0, 0.0, 0.0], 1]])
 
     def test_integration_renderComplexScene(self):
         self.raytracer.setOutput('test_integration_renderComplexScene.png', [800, 800])

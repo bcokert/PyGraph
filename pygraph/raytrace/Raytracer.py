@@ -69,7 +69,7 @@ class Raytracer:
                 ray = self.vectorAdd(ray, dist) # ray from camera point to pixel
                 ray = self.normalize(ray)
 
-                collision = self.findCollision(ray)
+                collision, collided_object = self.findCollision(ray)
 
                 # Verify that collision is within the clipping plane, and then color it
                 if (collision != 'NONE' and collision > self.clipping_distance):
@@ -106,7 +106,7 @@ class Raytracer:
             elif (intersect < collision):
                 collision = intersect
 
-        return collision
+        return [collision, sphere]
 
     def normalize(self, vector):
         summ = 0.0;
@@ -136,7 +136,8 @@ class Raytracer:
 
     def calculateColor(self, ray, dist):
         self._verifyVector(ray)
-        return [200, 0, 0]
+        col = 200/(math.pow(2, dist - 1.0))
+        return [int(col), 0, 0]
 
     def _verifyVector(self, vector, v_type='xyz'):
         if not (type(vector) is list):
