@@ -62,13 +62,12 @@ class TestRaytracer(unittest.TestCase):
         self.assertEqual(self.raytracer.dotProduct([1, 2, 3], [4, 5, 6]), 32.0)
 
     def test_calculateColor(self):
-        self.assertEqual(self.raytracer.calculateColor([0.0,0.0,0.0], 1), [200, 0, 0])
-        self.assertEqual(self.raytracer.calculateColor([0.0,0.0,0.0], 2), [100, 0, 0])
-        self.assertEqual(self.raytracer.calculateColor([0.0,0.0,0.0], 1.5), [150, 0, 0])
+        self.fail("Cannot test yet")
 
     def test_render(self):
         self.raytracer.setOutput('test_render_output.png', [500, 500])
         self.raytracer.addSphere([0.0, 1.0, 0.0], 0.25)
+        self.raytracer.addPointLight([1.0,-1.0,1.0], [255, 255, 255], 1)
         self.raytracer.setCamera([0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], 70)
         self.raytracer.render()
         self.assertTrue(os.path.exists('./test_render_output.png'), "The file wasn't created upon rendering")
@@ -82,7 +81,8 @@ class TestRaytracer(unittest.TestCase):
         self.raytracer.setOutput('test_integration_renderComplexScene.png', [800, 800])
         self.raytracer.addSphere([0.0, 1.0, 0.0], 0.5)
         self.raytracer.addSphere([-1.0, 1.0, 0.0], 0.4)
-        self.raytracer.addSphere([1.0, 1.0, 1.0], 0.2)
+        self.raytracer.addSphere([0.0, -1.0, 0.7], 0.1)
+        self.raytracer.addPointLight([1.0,-4.0,1.0], [255, 255, 255], 2)
         self.raytracer.setCamera([0.0, -3.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], 70)
         self.raytracer.render()
         self.assertTrue(os.path.exists('./test_integration_renderComplexScene.png'), "The file wasn't created upon rendering")

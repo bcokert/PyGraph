@@ -73,7 +73,7 @@ class Raytracer:
 
                 # Verify that collision is within the clipping plane, and then color it
                 if (collision != 'NONE' and collision > self.clipping_distance):
-                    self.renderer.drawOver([[x, y, self.calculateColor(ray, collision)]])
+                    self.renderer.drawOver([[x, y, self.calculateColor(ray, collision, collided_object)]])
 
         self.renderer.render(file_name=self.output_file)
 
@@ -134,10 +134,16 @@ class Raytracer:
             summ += float(a[i])*b[i]
         return summ
 
-    def calculateColor(self, ray, dist):
+    def calculateColor(self, ray, dist, collided_object):
         self._verifyVector(ray)
-        col = 200/(math.pow(2, dist - 1.0))
-        return [int(col), 0, 0]
+        col = list(self.ambient)
+        collision = [dist*i for i in ray]
+        for light in self.point_lights:
+            dcol = .8 * self.dotProduct(self.normalize(self.vectorSubtract(light[0], collision)), self.normalize(self.vectorSubtract(collision, collided_object[0])))
+            norm_light = [int(i) for i in self.normalize(self.vectorAdd(light[1], [200, 0, 0]))]
+            difcol = [dcol*i for i in norm_light]
+            col = [int(i) for i in self.normalize(self.vectorAdd(col, norm_light))]
+        return col
 
     def _verifyVector(self, vector, v_type='xyz'):
         if not (type(vector) is list):
