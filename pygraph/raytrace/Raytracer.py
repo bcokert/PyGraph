@@ -12,8 +12,8 @@ class Raytracer:
         >>> from pygraph.raytrace.Raytracer import Raytracer
         >>> raytracer = Raytracer()
         >>> raytracer.addSphere([0, 0, 0], 1) # x,y,z radius
-        >>> raytracer.addPointLight([1, -2, 1], [255, 255, 255], 2) # [xyz], [RGB], strength (relative)
-        >>> raytracer.setAmbient([255, 255, 255], 0.1) # RGB, Alpha
+        >>> raytracer.addPointLight([1, -2, 1], [1.0, 1.0, 1.0], 2) # [xyz], [RGB], strength (relative)
+        >>> raytracer.setAmbient([1.0, 1.0, 1.0], 0.1) # RGB, Alpha
         >>> raytracer.setCamera([0, -2, 0], [0, 1, 0], [0, 0, 1], 35) # [xyz], [forward], [up], fov
         >>> raytracer.setOutput('test.png', [500, 500]) # name, width, height
         >>> raytracer.render(3) # max bounces
@@ -22,7 +22,7 @@ class Raytracer:
     def __init__(self):
         self.spheres = []
         self.point_lights = []
-        self.ambient = [0,0,0]
+        self.ambient = [0.0,0.0,0.0]
         self.camera = []
         self.output_size = []
         self.output_file = ''
@@ -73,7 +73,7 @@ class Raytracer:
 
                 # Verify that collision is within the clipping plane, and then color it
                 if (collision != 'NONE' and collision > self.clipping_distance):
-                    self.renderer.drawOver([[x, y, self.calculateColor(ray, collision, collided_object)]])
+                    self.renderer.drawOver([[x, y, [int(255*i) for i in self.calculateColor(self.camera[0], ray, collision, collided_object)]]])
 
         self.renderer.render(file_name=self.output_file)
 
@@ -109,11 +109,14 @@ class Raytracer:
         return [collision, sphere]
 
     def normalize(self, vector):
-        summ = 0.0;
+        summ = self.vectorLength(vector)
+        return [i/summ for i in vector]
+
+    def vectorLength(self, vector):
+        summ = 0.0
         for i in vector:
             summ += float(i)*i
-        summ = math.sqrt(summ)
-        return [i/summ for i in vector]
+        return math.sqrt(summ)
 
     def crossProduct(self, a, b):
         return [
@@ -134,16 +137,51 @@ class Raytracer:
             summ += float(a[i])*b[i]
         return summ
 
-    def calculateColor(self, ray, dist, collided_object):
+    def calculateColor(self, origin, ray, dist, collided_object):
         self._verifyVector(ray)
-        col = list(self.ambient)
-        collision = [dist*i for i in ray]
+
+        p_collision = self.vectorAdd(origin, [dist*i for i in ray])
+        p_sphere = collided_object[0]
+        k_ambient = 1.0
+        k_specular = 1.0
+        k_diffuse = 0.8
+        k_shine = 50
+        m_diffuse = [1, 0.0, 0.0]
+        m_specular = [1.0, 1.0, 1.0]
+        v_normal = self.normalize(self.vectorSubtract([2*i for i in p_collision], p_sphere))
+
+        c_ambient = [k_ambient * i for i in self.ambient]
+
+        color_local = list(c_ambient) # Ambient
+
         for light in self.point_lights:
-            dcol = .8 * self.dotProduct(self.normalize(self.vectorSubtract(light[0], collision)), self.normalize(self.vectorSubtract(collision, collided_object[0])))
-            norm_light = [int(i) for i in self.normalize(self.vectorAdd(light[1], [200, 0, 0]))]
-            difcol = [dcol*i for i in norm_light]
-            col = [int(i) for i in self.normalize(self.vectorAdd(col, norm_light))]
-        return col
+            v_light = self.normalize(self.vectorSubtract(light[0], p_collision))
+            v_reflected = self.normalize(self.vectorSubtract(v_light, [2*self.dotProduct(v_normal, v_light) * i for i in v_normal]))
+            c_light = [(float(light[2]) * i) for i in light[1]]
+            attenuation = 1.0/self.vectorLength(self.vectorSubtract(light[0], p_collision))
+
+            i_diffuse = max(0.0, self.dotProduct(v_normal, v_light))
+            i_specular = max(0.0, self.dotProduct(v_reflected, v_light)) ** k_shine
+
+            c_diffuse = [k_diffuse * i_diffuse * i for i in m_diffuse]
+            c_specular = [k_specular * i_specular * i for i in m_specular]
+
+            spec_diff = [attenuation * i for i in self.vectorAdd(c_diffuse, c_specular)]
+            spec_diff = [c_light[0] * spec_diff[0], c_light[1] * spec_diff[1], c_light[2] * spec_diff[2]] # Light color * Material Color(with shading)
+
+            color_local = self.vectorAdd(color_local, spec_diff) # add the color created by this light to the current color
+
+        # Here we could recursively fire another ray, if we add a recursion number to calculateColor
+        color_reflected = [0.0, 0.0, 0.0]
+        color_refracted = [0.0, 0.0, 0.0]
+
+        color = self.vectorAdd(color_local, self.vectorAdd(color_reflected, color_refracted))
+
+        # We might have a value greater than 1 for a component. We need to divide by the maximum to lower intensity whilst retaining the color
+        max_color = max(color[0], color[1], color[2])
+        if (max_color > 1.0):
+            color = [i/max_color for i in color]
+        return color
 
     def _verifyVector(self, vector, v_type='xyz'):
         if not (type(vector) is list):
@@ -158,8 +196,8 @@ class Raytracer:
                     return
         elif(v_type == 'RGB'):
             for i in vector:
-                if (type(i) != int or i < 0 or i > 255):
-                    raise VectorError('RGB int', len(v_type), vector)
+                if (type(i) != float or i < 0.0 or i > 1.0):
+                    raise VectorError('RGB float', len(v_type), vector)
                 else:
                     return
         elif(v_type == "wh"):
