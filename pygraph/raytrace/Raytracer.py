@@ -54,7 +54,8 @@ class Raytracer:
         self._verifyVector(out_size, v_type='wh')
         self.output_size = out_size
         self.renderer = Renderer(self.output_size[0], self.output_size[1])
-        self.renderer.setBackgroundColor(R='0', G='0', B='0')
+        self.renderer.setBackgroundColor(R=0, G=0, B=0)
+        print "Set the background to: {} == {}".format(self.renderer.background_color, self.renderer.pixels[0][0])
 
     def render(self):
         screenx = (math.tan(math.radians(self.camera[4]/2))) # The half width of the screen plane
@@ -91,10 +92,12 @@ class Raytracer:
                     self.renderer.drawOver([[x, y, [int(255*i) for i in self.calculateColor(self.camera[0], ray, collision, collided_object)]]])
 
         print "Done rendering {} by {} image with {} spheres and {} lights".format(self.output_size[0], self.output_size[1], len(self.spheres), len(self.point_lights))
+        print "Renderer background color: {}".format(self.renderer.background_color)
         self.renderer.render(file_name=self.output_file)
 
     def findCollision(self, ray):
         collision = 'NONE'
+        collision_sphere = 'NONE'
         for sphere in self.spheres:
             cam_sub_sphere = self.vectorSubtract(self.camera[0], sphere[0]) # cam-sph
             b = 2 * self.dotProduct(cam_sub_sphere, ray) # 2(cam-sph).ray
@@ -112,18 +115,20 @@ class Raytracer:
             intersect = col2
             if (col1 < col2):
                 intersect = col1
-            print "Possible Collisions: {0}, {1}. Chose: {2}".format(col1, col2, intersect)########################################
+            #print "Possible Collisions: {0}, {1}. Chose: {2}".format(col1, col2, intersect)########################################
 
             if (intersect < 0.0):
-                print "Skipping collision due to intersect behind camera: {}".format(intersect)##########################################
+                #print "Skipping collision due to intersect behind camera: {}".format(intersect)##########################################
                 continue
 
             if (collision == 'NONE'):
                 collision = intersect
+                collision_sphere = sphere
             elif (intersect < collision):
                 collision = intersect
+                collision_sphere = sphere
 
-        return [collision, sphere]
+        return [collision, collision_sphere]
 
     def normalize(self, vector):
         summ = self.vectorLength(vector)
@@ -164,7 +169,7 @@ class Raytracer:
         k_ambient = 1.0
         k_specular = 1.0
         k_diffuse = 0.8
-        k_shine = 50
+        k_shine = 100
         m_diffuse = [1.0, 0.0, 0.0]
         m_specular = [1.0, 1.0, 1.0]
         v_normal = self.normalize([i/collided_object[1] for i in self.vectorSubtract(p_collision, p_sphere)])

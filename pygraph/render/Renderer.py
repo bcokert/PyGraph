@@ -46,6 +46,7 @@ class Renderer:
     def setBackgroundColor(self, R=256, G=256, B=256):
         if (R <= 255 and G <= 255 and B <= 255 and R >= 0 and G >= 0 and B >= 0):
             self.background_color = [R, G, B]
+            self.pixels = [self.background_color*self.buffer_x for y in range(self.buffer_y)]
         return self.background_color
 
     def drawOver(self, pixels, x_orig = 0, y_orig = 0):
