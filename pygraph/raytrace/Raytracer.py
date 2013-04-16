@@ -90,6 +90,7 @@ class Raytracer:
                 if (collision != 'NONE' and collision > self.clipping_distance):
                     self.renderer.drawOver([[x, y, [int(255*i) for i in self.calculateColor(self.camera[0], ray, collision, collided_object)]]])
 
+        print "Done rendering {} by {} image with {} spheres and {} lights".format(self.output_size[0], self.output_size[1], len(self.spheres), len(self.point_lights))
         self.renderer.render(file_name=self.output_file)
 
     def findCollision(self, ray):
@@ -163,7 +164,7 @@ class Raytracer:
         k_ambient = 1.0
         k_specular = 1.0
         k_diffuse = 0.8
-        k_shine = 100
+        k_shine = 50
         m_diffuse = [1.0, 0.0, 0.0]
         m_specular = [1.0, 1.0, 1.0]
         v_normal = self.normalize([i/collided_object[1] for i in self.vectorSubtract(p_collision, p_sphere)])
@@ -176,7 +177,7 @@ class Raytracer:
 
         for light in self.point_lights:
             v_light = self.normalize(self.vectorSubtract(light[0], p_collision))
-            v_reflected = self.normalize(self.vectorSubtract(v_light, [2*self.dotProduct(v_normal, v_light) * i for i in v_normal]))
+            v_reflected = self.normalize(self.vectorSubtract([2*self.dotProduct(v_normal, v_light) * i for i in v_normal], v_light))
             c_light = [(float(light[2]) * i) for i in light[1]]
             attenuation = 1.0/self.vectorLength(self.vectorSubtract(light[0], p_collision))
 
