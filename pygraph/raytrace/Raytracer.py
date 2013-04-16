@@ -67,7 +67,7 @@ class Raytracer:
 
         for y in range(self.output_size[1]):
             for x in range(self.output_size[0]):
-                print "Ray from: {} through {},{} of {},{}".format(self.camera[0], x, y, self.output_size[0], self.output_size[1])
+                #print "Ray from: {} through {},{} of {},{}".format(self.camera[0], x, y, self.output_size[0], self.output_size[1])
                 ray = list(plane)
                 u = (x - float(self.output_size[0])/2)/self.output_size[0] # parameter of width of the screen plane
                 v = -(y - float(self.output_size[1])/2)/self.output_size[1] # parameter of height of the screen plane
@@ -163,15 +163,16 @@ class Raytracer:
         k_ambient = 1.0
         k_specular = 1.0
         k_diffuse = 0.8
-        k_shine = 50
+        k_shine = 100
         m_diffuse = [1.0, 0.0, 0.0]
         m_specular = [1.0, 1.0, 1.0]
-        v_normal = [i/collided_object[1] for i in self.vectorSubtract(p_collision, p_sphere)]
+        v_normal = self.normalize([i/collided_object[1] for i in self.vectorSubtract(p_collision, p_sphere)])
 
-        c_ambient = [k_ambient * i for i in self.ambient]
         #print "Total Ambient light: {}".format(c_ambient)####################################
 
-        color_local = list(c_ambient)
+        c_ambient = [k_ambient * i for i in m_diffuse]
+        amb_diff = [c_ambient[0] * self.ambient[0], c_ambient[1] * self.ambient[1], c_ambient[2] * self.ambient[2]]
+        color_local = list(amb_diff)
 
         for light in self.point_lights:
             v_light = self.normalize(self.vectorSubtract(light[0], p_collision))
