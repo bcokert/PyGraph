@@ -87,6 +87,6 @@ class TestRaytracer(unittest.TestCase):
         self.raytracer.addSphere([-1.0, 1.0, 0.0], 0.4)
         self.raytracer.addSphere([0.0, -1.0, 0.7], 0.1)
         self.raytracer.addPointLight([1.0,-4.0,1.0], [1.0, 1.0, 1.0], 2)
-        self.raytracer.setCamera([0.0, -3.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], 70)
+        self.raytracer.setCamera([0.0, -6.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], 70)
         self.raytracer.render()
         self.assertTrue(os.path.exists('./test_integration_renderComplexScene.png'), "The file wasn't created upon rendering")
