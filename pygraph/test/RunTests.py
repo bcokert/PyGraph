@@ -15,19 +15,23 @@ def addTest(module):
 
 #####################################################################################
 """Suite_Draw"""
-addTest('pygraph.test.draw.shapes.BasicShapes')
+#addTest('pygraph.test.draw.shapes.BasicShapes')
 
 """Suite_Render"""
 addTest('pygraph.test.render.Renderer')
 
 """Suite_LSystem"""
-addTest('pygraph.test.generate.LSystem')
+#addTest('pygraph.test.generate.LSystem')
 
 """Suite_SimpleTurtle"""
-addTest('pygraph.test.generate.SimpleTurtle')
+#addTest('pygraph.test.generate.SimpleTurtle')
+
+"""Suite_RenderablePrimitive"""
+addTest('pygraph.test.raytrace.primitives.RenderablePrimitive')
 
 """Suite_Raytracer"""
-addTest('pygraph.test.raytrace.Raytracer')
+#addTest('pygraph.test.raytrace.Raytracer')
+
 #####################################################################################
 
 class customResults(unittest.TestResult):
