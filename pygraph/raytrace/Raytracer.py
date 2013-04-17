@@ -54,7 +54,7 @@ class Raytracer:
         self._verifyVector(out_size, v_type='wh')
         self.output_size = out_size
         self.renderer = Renderer(self.output_size[0], self.output_size[1])
-        self.renderer.setBackgroundColor(R=0, G=0, B=0)
+        self.renderer.setBackgroundColor(R=80, G=80, B=80)
         print "Set the background to: {} == {}".format(self.renderer.background_color, self.renderer.pixels[0][0])
 
     def render(self):
@@ -84,8 +84,8 @@ class Raytracer:
                 #print "Ray normalized: {}".format(ray)
 
                 collision, collided_object = self.findCollision(ray)
-                if (collision != 'NONE'):
-                    print "Collision from ray {}[{},{}] @ {} into {}".format(ray, x, y, collision, collided_object) ########################################################
+                #if (collision != 'NONE'):
+                    #print "Collision from ray {}[{},{}] @ {} into {}".format(ray, x, y, collision, collided_object) ########################################################
 
                 # Verify that collision is within the clipping plane, and then color it
                 if (collision != 'NONE' and collision > self.clipping_distance):
@@ -160,11 +160,11 @@ class Raytracer:
         return summ
 
     def calculateColor(self, origin, ray, dist, collided_object):
-        print "Calculating color from {} along ray {} at distance {}".format(origin, ray, dist)##################################
+        #print "Calculating color from {} along ray {} at distance {}".format(origin, ray, dist)##################################
         self._verifyVector(ray)
 
         p_collision = self.vectorAdd(origin, [dist*i for i in ray])
-        print "Collision point {}".format(p_collision)##################################
+        #print "Collision point {}".format(p_collision)##################################
         p_sphere = collided_object[0]
         k_ambient = 1.0
         k_specular = 1.0
@@ -186,24 +186,24 @@ class Raytracer:
             c_light = [(float(light[2]) * i) for i in light[1]]
             attenuation = 1.0/self.vectorLength(self.vectorSubtract(light[0], p_collision))
 
-            print "\tL: {}\n\tN: {}\n\tR: {}".format(v_light, v_normal, v_reflected)
+            #print "\tL: {}\n\tN: {}\n\tR: {}".format(v_light, v_normal, v_reflected)
 
             i_diffuse = max(0.0, self.dotProduct(v_normal, v_light))
             i_specular = max(0.0, self.dotProduct(v_reflected, v_light)) ** k_shine
-            print "\tDiffuse Shade: {}\n\tSpecular Shade: {}".format(i_diffuse, i_specular)####################################
+            #print "\tDiffuse Shade: {}\n\tSpecular Shade: {}".format(i_diffuse, i_specular)####################################
 
             c_diffuse = [k_diffuse * i_diffuse * i for i in m_diffuse]
             c_specular = [k_specular * i_specular * i for i in m_specular]
-            print "Diffuse Color: {} Specular Color: {}".format(c_diffuse, c_specular)####################################
+            #print "Diffuse Color: {} Specular Color: {}".format(c_diffuse, c_specular)####################################
 
             spec_diff = [attenuation * i for i in self.vectorAdd(c_diffuse, c_specular)]
-            print "Attenuation sum color: {}".format(spec_diff)####################################
+            #print "Attenuation sum color: {}".format(spec_diff)####################################
             spec_diff = [c_light[0] * spec_diff[0], c_light[1] * spec_diff[1], c_light[2] * spec_diff[2]] # Light color * Material Color(with shading)
-            print "Light * Material color: {}".format(spec_diff)####################################
+            #print "Light * Material color: {}".format(spec_diff)####################################
 
             color_local = self.vectorAdd(color_local, spec_diff) # add the color created by this light to the current color
-            print "Local Color for light {}: {}".format(light[0], color_local)####################################
-        print "Final Local Color: {}".format(color_local)####################################
+            #print "Local Color for light {}: {}".format(light[0], color_local)####################################
+        #print "Final Local Color: {}".format(color_local)####################################
 
         # Here we could recursively fire another ray, if we add a recursion number to calculateColor
         color_reflected = [0.0, 0.0, 0.0]
@@ -216,7 +216,7 @@ class Raytracer:
         max_color = max(color[0], color[1], color[2])
         if (max_color > 1.0):
             color = [i/max_color for i in color]
-        print "Final color after recursion: {} Normalized: {}".format(color_old, color)####################################
+        #print "Final color after recursion: {} Normalized: {}".format(color_old, color)####################################
         return color
 
     def _verifyVector(self, vector, v_type='xyz'):
