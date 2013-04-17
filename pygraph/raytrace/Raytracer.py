@@ -228,20 +228,17 @@ class Raytracer:
             for i in vector:
                 if type(i) != float:
                     raise VectorError('float', len(v_type), vector)
-                else:
-                    return
+            return
         elif(v_type == 'RGB'):
             for i in vector:
                 if (type(i) != float or i < 0.0 or i > 1.0):
                     raise VectorError('RGB float', len(v_type), vector)
-                else:
-                    return
+            return
         elif(v_type == "wh"):
             for i in vector:
                 if type(i) != int:
                     raise VectorError('Width Height int', len(v_type), vector)
-                else:
-                    return
+            return
         raise VectorError(v_type, len(v_type), vector, msg="Unknown Vector Type")
 
 class VectorError(Exception):
