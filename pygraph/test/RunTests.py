@@ -17,6 +17,9 @@ def addTest(module):
 """Suite_Draw"""
 #addTest('pygraph.test.draw.shapes.BasicShapes')
 
+"""Suite_Vector"""
+addTest('pygraph.test.utility.Vector3f')
+
 """Suite_Render"""
 addTest('pygraph.test.render.Renderer')
 
