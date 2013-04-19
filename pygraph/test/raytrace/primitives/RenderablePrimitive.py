@@ -1,6 +1,7 @@
 import unittest
 import os
 from pygraph.raytrace.primitives.RenderablePrimitive import RenderablePrimitive
+from pygraph.utility.Vector3f import Vector3f
 
 class TestRenderablePrimitive(unittest.TestCase):
 
@@ -12,8 +13,8 @@ class TestRenderablePrimitive(unittest.TestCase):
             self.assertTrue(hasattr(self.renderable, func) and callable(getattr(self.renderable, func)), "Interface requires function: " + func)
 
     def test_intersect(self):
-        self.assertEqual(self.renderable.intersect([1.0, 1.0, 1.0], [1.0, 1.0, 1.0]), "NONE")
-        self.assertEqual(self.renderable.intersect([1.0, 5.0, 7.0], [1.0, 2.0, 5.0]), "NONE")
+        self.assertEqual(self.renderable.intersect(Vector3f(1.0, 1.0, 1.0), Vector3f(1.0, 1.0, 1.0)), "NONE")
+        self.assertEqual(self.renderable.intersect(Vector3f(1.0, 5.0, 7.0), Vector3f(1.0, 2.0, 5.0)), "NONE")
 
     def test_setDiffuseColor(self):
         self.assertEqual(self.renderable.setDiffuseColor([1.0, 1.0, 1.0]), [1.0, 1.0, 1.0])
@@ -54,5 +55,5 @@ class TestRenderablePrimitive(unittest.TestCase):
         self.assertEqual(self.renderable.setShininess(), 102)
 
     def test_normalAt(self):
-        self.assertEqual(self.renderable.normalAt([1.0, 1.0, 1.0]), "NONE")
-        self.assertEqual(self.renderable.normalAt([1.0, 5.0, 7.0]), "NONE")
+        self.assertEqual(self.renderable.normalAt(Vector3f(1.0, 1.0, 1.0)), "NONE")
+        self.assertEqual(self.renderable.normalAt(Vector3f(1.0, 5.0, 7.0)), "NONE")

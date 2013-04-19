@@ -11,6 +11,7 @@ class Vector3f:
         - 'cross': Returns the cross product of the vector and the argument vector
         - 'length': Returns the length of the vector
         - 'normalize': Normalizes the vector
+        - 'duplicate': Returns a vector that is a duplicate of the current vector
     
     :Examples:
         >>> from pygraph.utility.Vector3f import *
@@ -78,3 +79,9 @@ class Vector3f:
 
     def toList(self):
         return [self.x, self.y, self.z]
+
+    def duplicate(self):
+        return Vector3f(self.x, self.y, self.z, normal=self.normal)
+
+    def __str__(self):
+        return self.toList().__str__()

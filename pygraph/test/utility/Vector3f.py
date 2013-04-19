@@ -8,7 +8,7 @@ class TestVector3f(unittest.TestCase):
         self.vector = Vector3f(0.0, 0.0, 0.0)
 
     def test_interface(self):
-        for func in ('normalize', 'cross', '__add__', '__sub__', '__mul__', 'dot', 'length', '__getitem__', 'toList'):
+        for func in ('normalize', 'cross', '__add__', '__sub__', '__mul__', 'dot', 'length', '__getitem__', 'toList', 'duplicate', '__str__'):
             self.assertTrue(hasattr(self.vector, func) and callable(getattr(self.vector, func)), "Interface requires function: " + func)
 
     def test_normalize(self):
@@ -38,7 +38,6 @@ class TestVector3f(unittest.TestCase):
         v1 = Vector3f(1, 2, 3)
         v2 = Vector3f(4, 5, 6)
         sumv = v1 + v2
-        print sumv
         self.assertEqual(sumv.toList(), [5.0, 7.0, 9.0])
 
     def test_sub(self):
@@ -73,3 +72,23 @@ class TestVector3f(unittest.TestCase):
         self.assertEqual(v3.dot(v1), 0.0)
         self.assertEqual(v4.dot(v5), 32.0)
         self.assertEqual(v5.dot(v4), 32.0)
+
+    def test_duplicate(self):
+        v1 = Vector3f(1, 0, 0)
+        v2 = Vector3f(2, 0, 0).normalize()
+        def update_by_reference(v):
+            vd = v.duplicate()
+            v.x = 5
+            return vd
+        v1b = update_by_reference(v1)
+        v2b = v2.duplicate()
+
+        self.assertEqual(v2.toList(), v2b.toList())
+        self.assertEqual(v2b.normal, 1)
+
+        self.assertEqual(v1.toList(), [5.0, 0.0, 0.0])
+        self.assertEqual(v1b.toList(), [1.0, 0.0, 0.0])
+
+    def test_str(self):
+        v1 = Vector3f(0, 1, 2)
+        self.assertEqual(v1.__str__(), v1.toList().__str__())
