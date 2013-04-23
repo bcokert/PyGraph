@@ -1,22 +1,16 @@
 from pygraph.render.Renderer import Renderer
 from pygraph.utility.Vector3f import Vector3f
-import math
+from math import tan, radians, sqrt
 
 class Raytracer:
     """A class that implements a basic ray tracer. Not intended to provide complex functions, but rather to call them.
     
-    :Methodss:
+    :Methods:
         - 'render': Calculates the pixels and outputs them with its own Renderer object
         - 'addSphere': Basic sample function that adds a sphere to the scene
     
     :Examples:
         >>> from pygraph.raytrace.Raytracer import Raytracer
-        >>> raytracer = Raytracer()
-        >>> raytracer.addSphere([0, 0, 0], 1) # x,y,z radius
-        >>> raytracer.addPointLight([1, -2, 1], [1.0, 1.0, 1.0], 2) # [xyz], [RGB], strength (relative)
-        >>> raytracer.setAmbient([1.0, 1.0, 1.0], 0.1) # RGB, Alpha
-        >>> raytracer.setCamera([0, -2, 0], [0, 1, 0], [0, 0, 1], 35) # [xyz], [forward], [up], fov
-        >>> raytracer.setOutput('test.png', [500, 500]) # name, width, height
         >>> raytracer.render()
     """
 
@@ -24,12 +18,21 @@ class Raytracer:
         self.spheres = []
         self.point_lights = []
         self.ambient = [0.0,0.0,0.0]
-        self.camera = []
-        self.output_size = []
-        self.output_file = ''
         self.pixels = []
-        self.clipping_distance = 0.01
+
+        self.output_width = 100
+        self.output_height = 100
+        self.output_file = "default_output.png"
+
+        self.minimum_distance_from_camera = 0.01
         self.renderer = 'NONE'
+        
+        self.camera_origin = "NONE"
+        self.camera_forward = "NONE"
+        self.camera_up = "NONE"
+        self.camera_right = "NONE"
+        self.screen_horizonal = "NONE"
+        self.screen_vertical = "NONE"
 
     def addSphere(self, origin, radius):
         self.spheres.append([origin.duplicate(), float(radius)])
@@ -40,73 +43,91 @@ class Raytracer:
     def setAmbient(self, color):
         self.ambient = list(color)
 
-    def setCamera(self, origin, forward, up, fov):
-        self.camera = [origin.duplicate(), forward.normalize(), up.normalize(), forward.cross(up).normalize(), fov]
+    def setCamera(self, origin, forward, up, field_of_view):
+        self.camera_origin = origin.duplicate()
+        self.camera_forward = forward.normalize()
+        self.camera_up = up.normalize()
+        self.camera_right = forward.cross(up).normalize()
 
-    def setOutput(self, out_file, out_size):
+        self.screen_halfwidth = tan(radians(field_of_view/2.0))
+        self.screen_halfheight = tan(radians((self.output_height/self.output_width) * field_of_view/2.0))
+
+    def setOutput(self, out_file, out_width, out_height):
         self.output_file = out_file
-        self.output_size = out_size
-        self.renderer = Renderer(self.output_size[0], self.output_size[1])
+        self.output_width = out_width
+        self.output_height = out_height
+
+        self.renderer = Renderer(self.output_width, self.output_height)
         self.renderer.setBackgroundColor(R=80, G=80, B=80)
 
     def render(self):
-        screenx = (math.tan(math.radians(self.camera[4]/2))) # The half width of the screen plane
-        screeny = (math.tan(math.radians((self.output_size[1]/self.output_size[0]) * self.camera[4]/2))) # The half height of the screen plane
-        plane = self.camera[0] + self.camera[1] # The point at the center of the screen plane
+        """Calculates each pixel by shooting rays through them from a camera
 
-        for y in range(self.output_size[1]):
-            for x in range(self.output_size[0]):
-                ray = plane.duplicate()
-                u = (x - float(self.output_size[0])/2)/self.output_size[0] # parameter of width of the screen plane
-                v = -(y - float(self.output_size[1])/2)/self.output_size[1] # parameter of height of the screen plane
-                du = u*screenx # position along the right vector
-                dv = v*screeny # position along the up vector
+        :Explaination:
+            For each pixel:
+                pixel_color = color from rays collisions
+                ray = point on camera plane - camera
+                point on camera plane = center of plane + distance right + distance up
+                center of plane = camera + forward
+                distance right = du * right vector
+                distance up = dv * up vector
+                du = % along right vector = ((x - pixel_width/2) / pixel_width) * screen_halfwidth
+                du factored = (2x - pixel_width) * screen_halfwidth / 2*pixel_width
+                We can calculate the part outside the brackets outside of the for loop
+                And do a similar thing for height
+            So:
+                du = (2x - pixel_width) * width_shortcut
+                dv = (2y - pixel_height) * height_shortcut
+                We need to flip dv to match the fact that y increases as we go down (technical issue, not really geometric)
+        """
+        width_shortcut = self.screen_halfwidth / (2 * self.output_width)
+        height_shortcut = self.screen_halfheight / (2 * self.output_height)
+        center_of_camera_plane = self.camera_origin + self.camera_forward
 
-                ray = ray + self.camera[3] * du # add the right vector
-                ray = ray + self.camera[2] * dv # add the up vector
-                ray = ray - self.camera[0] # Ray == point on screen - Camera
-                ray = ray.normalize()
+        for y in range(self.output_height):
+            for x in range(self.output_width):
+                du = (2*x - self.output_width) * width_shortcut
+                dv = -(2*y - self.output_height) * height_shortcut
 
-                collision, collided_object = self.findCollision(ray)
+                point_on_camera_plane = center_of_camera_plane + self.camera_right * du + self.camera_up * dv
+                ray = (point_on_camera_plane - self.camera_origin).normalize()
 
-                # Verify that collision is within the clipping plane, and then color it
-                if (collision != 'NONE' and collision > self.clipping_distance):
-                    self.renderer.drawOver([[x, y, [int(255*i) for i in self.calculateColor(self.camera[0], ray, collision, collided_object)]]])
+                collision, collided_object = self.findClosestCollision(self.camera_origin, ray)
+                if (collision != 'NONE' and collision > self.minimum_distance_from_camera):
+                    self.renderer.drawOver([[x, y, [int(255*i) for i in self.calculateColor(self.camera_origin, ray, collision, collided_object)]]])
 
         self.renderer.render(file_name=self.output_file)
 
-    def findCollision(self, ray):
-        collision = 'NONE'
-        collision_sphere = 'NONE'
+    def findClosestCollision(self, origin, ray):
+        collision, collision_object = 'NONE', 'NONE'
         for sphere in self.spheres:
-            cam_sub_sphere = self.camera[0] - sphere[0] # cam-sph
-            b = 2 * cam_sub_sphere.dot(ray) # 2(cam-sph).ray
-            c = cam_sub_sphere.dot(cam_sub_sphere) - sphere[1]*sphere[1] # (cam-sph).(cam-sph) - radius^2
-            # Intersections at cam[0] + t*ray, where t is at^2 + bt + c
+            intersect = self.findClosestCollisionOnSphere(origin, ray, sphere)
+            if (intersect != "NONE" and intersect < collision):
+                collision, collision_object = intersect, sphere
+        return [collision, collision_object]
 
-            desc = b*b - 4*c
-            if (desc < 0.0):
-                continue
-            sqrt_desc = math.sqrt(desc)
-            col1 = (-b + sqrt_desc)/2
-            col2 = (-b - sqrt_desc)/2
+    def findClosestCollisionOnSphere(self, origin, ray, sphere):
+        origin_sub_sphere = origin - sphere[0]
+        b = 2 * origin_sub_sphere.dot(ray)
+        c = origin_sub_sphere.dot(origin_sub_sphere) - sphere[1]*sphere[1]
 
-            # The smallest positive root is where the ray intersects
-            intersect = col2
-            if (col1 < col2):
-                intersect = col1
+        intersect = "NONE"
+        for col in self.solveQuadratic(1, b, c):
+            if (col != "NONE" and col > 0.0):
+                if (intersect == "NONE" or col < intersect):
+                    intersect = col
+        return intersect
 
-            if (intersect < 0.0):
-                continue
+    def solveQuadratic(self, a, b, c):
+        assert(b != 0 or a != 0, "Expression received of the type 0x^2 + 0x + c = 0")
 
-            if (collision == 'NONE'):
-                collision = intersect
-                collision_sphere = sphere
-            elif (intersect < collision):
-                collision = intersect
-                collision_sphere = sphere
+        if (a == 0.0): return ["NONE", -c/float(b)]
 
-        return [collision, collision_sphere]
+        desc = b*b - 4 * a * c
+        if (desc < 0.0): return ["NONE", "NONE"]
+
+        sqrt_desc = sqrt(desc)
+        return [(-b + sqrt_desc)/(2.0 * a), (-b - sqrt_desc)/(2.0 * a)]
 
     def calculateColor(self, origin, ray, dist, collided_object):
         p_collision = origin + ray * dist

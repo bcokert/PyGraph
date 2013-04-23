@@ -16,7 +16,8 @@ class TestRaytracer(unittest.TestCase):
         self.rv3 = Vector3f(0, 0, 1)
 
     def test_interface(self):
-        for func in ('addSphere', 'addPointLight', 'setAmbient', 'setCamera', 'setOutput', 'render', 'findCollision', 'calculateColor'):
+        for func in ('addSphere', 'addPointLight', 'setAmbient', 'setCamera', 'setOutput', 'render', 'findClosestCollision', 'findClosestCollisionOnSphere', 'calculateColor',
+                'solveQuadratic'):
             self.assertTrue(hasattr(self.raytracer, func) and callable(getattr(self.raytracer, func)), "Interface requires function: " + func)
 
     def test_addSphere(self):
@@ -41,23 +42,24 @@ class TestRaytracer(unittest.TestCase):
         self.assertEqual(self.raytracer.ambient, [.2, .2, .2])
 
     def test_setOutput(self):
-        self.raytracer.setOutput('test.png', [700, 800])
+        self.raytracer.setOutput('test.png', 700, 800)
         self.assertEqual(self.raytracer.output_file, 'test.png')
-        self.assertEqual(self.raytracer.output_size, [700, 800])
+        self.assertEqual(self.raytracer.output_width, 700)
+        self.assertEqual(self.raytracer.output_height, 800)
         self.assertEqual(self.raytracer.renderer.buffer_x, 700)
         self.assertEqual(self.raytracer.renderer.buffer_y, 800)
 
     def test_setCamera(self):
-        self.assertEqual(self.raytracer.camera, [])
-        self.raytracer.setCamera(self.v1, self.rv1 * 3, self.rv2 * 5, 70)
-        self.assertEqual(self.raytracer.camera[0].toList(), self.v1.toList())
-        self.assertEqual(self.raytracer.camera[1].toList(), self.rv1.toList())
-        self.assertEqual(self.raytracer.camera[2].toList(), self.rv2.toList())
-        self.assertEqual(self.raytracer.camera[3].toList(), self.rv3.toList())
-        self.assertEqual(self.raytracer.camera[4], 70.0)
+        self.raytracer.setCamera(self.v1, self.rv1 * 3, self.rv2 * 5, 90)
+        self.assertEqual(self.raytracer.camera_origin.toList(), self.v1.toList())
+        self.assertEqual(self.raytracer.camera_forward.toList(), self.rv1.toList())
+        self.assertEqual(self.raytracer.camera_up.toList(), self.rv2.toList())
+        self.assertEqual(self.raytracer.camera_right.toList(), self.rv3.toList())
+        self.assertAlmostEqual(self.raytracer.screen_halfwidth, 1)
+        self.assertAlmostEqual(self.raytracer.screen_halfheight, 1)
 
     def test_render(self):
-        self.raytracer.setOutput('test_render_output.png', [100, 100])
+        self.raytracer.setOutput('test_render_output.png', 100, 100)
         self.raytracer.setAmbient([0.2, 0.2, 0.2])
         self.raytracer.addSphere(Vector3f(0, 1, 0), 0.25)
         self.raytracer.addPointLight(Vector3f(1.0,-1.0,1.0), [1.0, 1.0, 1.0], 1)
@@ -68,15 +70,37 @@ class TestRaytracer(unittest.TestCase):
         self.assertTrue(os.path.exists('./test_render_output.png'), "The file wasn't created upon rendering")
         print "Rendered a 100 * 100 image with 1 sphere and 1 light in {} seconds".format(end - start)
 
-    def test_findCollision(self):
-        sphere = Vector3f(2.0, 0.0, 0.0)
-        self.raytracer.addSphere(sphere, 1)
-        self.raytracer.setCamera(Vector3f(0.0, 0.0, 0.0), Vector3f(1.0, 0.0, 0.0), Vector3f(0.0, 0.0, 1.0), 70)
-        col = self.raytracer.findCollision(Vector3f(1.0, 0.0, 0.0))
-        self.assertEqual((col[0], col[1][0].toList(), col[1][1]), (1.0, sphere.toList(), 1))
+    def test_findClosestCollision(self):
+        fake_camera = Vector3f(0, 0, 0)
+        sphere1 = Vector3f(2.0, 0.0, 0.0)
+        sphere2 = Vector3f(6.0, 0.0, 0.0)
+        self.raytracer.addSphere(sphere1, 1)
+        self.raytracer.addSphere(sphere2, 1)
+
+        col1 = self.raytracer.findClosestCollision(fake_camera, Vector3f(1.0, 0.0, 0.0))
+        col2 = self.raytracer.findClosestCollision(fake_camera, Vector3f(0.0, 1.0, 0.0))
+        self.assertEqual((col1[0], col1[1][0].toList(), col1[1][1]), (1.0, sphere1.toList(), 1))
+        self.assertEqual(col2, ["NONE", "NONE"])
+
+    def test_findClosestCollisionOnSphere(self):
+        sphere1 = Vector3f(2.0, 0.0, 0.0)
+        sphere2 = Vector3f(-2.0, 0.0, 0.0)
+        self.raytracer.addSphere(sphere1, 1)
+        self.raytracer.addSphere(sphere2, 1)
+
+        self.assertEqual(self.raytracer.findClosestCollisionOnSphere(Vector3f(0, 0, 0), Vector3f(1, 0, 0), self.raytracer.spheres[0]), 1.0)
+        self.assertEqual(self.raytracer.findClosestCollisionOnSphere(Vector3f(0, 0, 0), Vector3f(0, 1, 0), self.raytracer.spheres[0]), "NONE")
+
+        self.assertEqual(self.raytracer.findClosestCollisionOnSphere(Vector3f(0, 0, 0), Vector3f(1, 0, 0), self.raytracer.spheres[1]), "NONE")
+
+    def test_solveQuadratic(self):
+        self.assertEqual(self.raytracer.solveQuadratic(3, -2, -8), [2.0, -4.0/3])
+        self.assertEqual(self.raytracer.solveQuadratic(1, -2, 1), [1.0, 1.0])
+        self.assertEqual(self.raytracer.solveQuadratic(2, 0, 4), ["NONE", "NONE"])
+        self.assertEqual(self.raytracer.solveQuadratic(0, 2, -4), ["NONE", 2.0])
 
     def test_integration_renderComplexScene(self):
-        self.raytracer.setOutput('test_integration_renderComplexScene.png', [300, 300])
+        self.raytracer.setOutput('test_integration_renderComplexScene.png', 300, 300)
         self.raytracer.setAmbient([0.2, 0.2, 0.2])
         self.raytracer.addSphere(Vector3f(0.0, 1.0, 0.0), 0.5)
         self.raytracer.addSphere(Vector3f(-1.0, 1.0, 0.0), 0.4)
