@@ -35,6 +35,8 @@ addTest('pygraph.test.raytrace.primitives.RenderablePrimitive')
 """Suite_Raytracer"""
 addTest('pygraph.test.raytrace.Raytracer')
 
+"""Suite_Sphere"""
+addTest('pygraph.test.raytrace.primitives.Sphere')
 #####################################################################################
 
 class customResults(unittest.TestResult):

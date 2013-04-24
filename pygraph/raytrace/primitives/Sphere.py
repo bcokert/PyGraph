@@ -1,6 +1,8 @@
 import math
+from pygraph.raytrace.primitives.RenderablePrimitive import RenderablePrimitive
+from pygraph.utility.Vector3f import Vector3f
 
-class Sphere:
+class Sphere(RenderablePrimitive):
     """A class that represents perfect spheres
     
     :Methods:

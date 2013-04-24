@@ -1,6 +1,6 @@
 import math
 
-class RenderablePrimitive:
+class RenderablePrimitive(object):
     """A class that baseclasses renderable objects, like spheres or quads. Provides the main interface, and the property setters/getters
     
     :Methods:
