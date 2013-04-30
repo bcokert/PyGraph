@@ -102,6 +102,7 @@ class TestRaytracer(unittest.TestCase):
         self.raytracer.addPrimitive(sph2)
         self.raytracer.addPrimitive(sph3)
         self.raytracer.addPrimitive(sph4)
+        self.raytracer.addPrimitive(sph5)
         self.raytracer.addPointLight(Vector3f(1.0,-4.0,1.0), [1.0, 1.0, 1.0], 2)
         self.raytracer.setCamera(Vector3f(0.0, -6.0, 0.0), Vector3f(0.0, 1.0, 0.0), Vector3f(0.0, 0.0, 1.0), 70)
         start = time()
