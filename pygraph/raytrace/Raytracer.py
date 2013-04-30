@@ -15,7 +15,7 @@ class Raytracer:
     """
 
     def __init__(self):
-        self.spheres = []
+        self.primitives = []
         self.point_lights = []
         self.ambient = [0.0,0.0,0.0]
         self.pixels = []
@@ -34,8 +34,8 @@ class Raytracer:
         self.screen_horizonal = "NONE"
         self.screen_vertical = "NONE"
 
-    def addSphere(self, origin, radius):
-        self.spheres.append([origin.duplicate(), float(radius)])
+    def addPrimitive(self, primitive):
+        self.primitives.append(primitive)
 
     def addPointLight(self, origin, color, strength):
         self.point_lights.append([origin.duplicate(), color, strength])
@@ -100,48 +100,17 @@ class Raytracer:
 
     def findClosestCollision(self, origin, ray):
         collision, collision_object = 'NONE', 'NONE'
-        for sphere in self.spheres:
-            intersect = self.findClosestCollisionOnSphere(origin, ray, sphere)
+        for primitive in self.primitives:
+            intersect = primitive.intersect(origin, ray)
             if (intersect != "NONE" and intersect < collision):
-                collision, collision_object = intersect, sphere
+                collision, collision_object = intersect, primitive
         return [collision, collision_object]
 
-    def findClosestCollisionOnSphere(self, origin, ray, sphere):
-        origin_sub_sphere = origin - sphere[0]
-        b = 2 * origin_sub_sphere.dot(ray)
-        c = origin_sub_sphere.dot(origin_sub_sphere) - sphere[1]*sphere[1]
-
-        intersect = "NONE"
-        for col in self.solveQuadratic(1, b, c):
-            if (col != "NONE" and col > 0.0):
-                if (intersect == "NONE" or col < intersect):
-                    intersect = col
-        return intersect
-
-    def solveQuadratic(self, a, b, c):
-        assert(b != 0 or a != 0, "Expression received of the type 0x^2 + 0x + c = 0")
-
-        if (a == 0.0): return ["NONE", -c/float(b)]
-
-        desc = b*b - 4 * a * c
-        if (desc < 0.0): return ["NONE", "NONE"]
-
-        sqrt_desc = sqrt(desc)
-        return [(-b + sqrt_desc)/(2.0 * a), (-b - sqrt_desc)/(2.0 * a)]
-
-    def calculateColor(self, origin, ray, dist, collided_object):
+    def calculateColor(self, origin, ray, dist, primitive):
         p_collision = origin + ray * dist
-        p_sphere = collided_object[0]
-        k_ambient = 1.0
-        k_specular = 1.0
-        k_diffuse = 0.8
-        k_shine = 100
-        m_diffuse = [1.0, 0.0, 0.0]
-        m_specular = [1.0, 1.0, 1.0]
-        v_normal = (p_collision - p_sphere) * (1/collided_object[1])
+        v_normal = primitive.normalAt(p_collision)
 
-        c_ambient = [k_ambient * i for i in m_diffuse]
-        amb_diff = [c_ambient[0] * self.ambient[0], c_ambient[1] * self.ambient[1], c_ambient[2] * self.ambient[2]]
+        amb_diff = [primitive.diffuse_color[0] * self.ambient[0], primitive.diffuse_color[1] * self.ambient[1], primitive.diffuse_color[2] * self.ambient[2]]
         color_local = list(amb_diff)
 
         for light in self.point_lights:
@@ -151,10 +120,10 @@ class Raytracer:
             attenuation = 1.0/(light[0] - p_collision).length()
 
             i_diffuse = max(0.0, v_normal.dot(v_light))
-            i_specular = max(0.0, v_reflected.dot(v_light)) ** k_shine
+            i_specular = max(0.0, v_reflected.dot(v_light)) ** primitive.shininess
 
-            c_diffuse = [k_diffuse * i_diffuse * i for i in m_diffuse]
-            c_specular = [k_specular * i_specular * i for i in m_specular]
+            c_diffuse = [primitive.diffuse_constant * i_diffuse * i for i in primitive.diffuse_color]
+            c_specular = [primitive.diffuse_constant * i_specular * i for i in primitive.specular_color]
 
             spec_diff = [attenuation * (i[0] + i[1]) for i in zip(c_diffuse, c_specular)]
             spec_diff = [i[0] * i[1] for i in zip(c_light, spec_diff)] # Light color * Material Color(with shading)

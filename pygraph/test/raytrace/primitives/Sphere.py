@@ -1,63 +1,41 @@
 import unittest
 import os
+from pygraph.test.raytrace.primitives.RenderablePrimitive import TestRenderablePrimitive
 from pygraph.raytrace.primitives.Sphere import Sphere
 from pygraph.utility.Vector3f import Vector3f
 
-class TestSphere(unittest.TestCase):
+class TestSphere(TestRenderablePrimitive):
 
     def setUp(self):
         self.renderable = Sphere()
+        self.renderable2 = Sphere()
 
     def test_interface(self):
-        for func in ('intersect', 'setDiffuseColor', 'setSpecularColor', 'setDiffuseConstant', 'setSpecularConstant', 'setShininess', 'normalAt', 'setRadius', 'setOrigin'):
+        super(TestSphere, self).test_interface()
+        for func in ['setRadius']:
             self.assertTrue(hasattr(self.renderable, func) and callable(getattr(self.renderable, func)), "Interface requires function: " + func)
 
     def test_intersect(self):
-        self.fail("Not yet implemented")
+        sphere1 = Sphere(Vector3f(2.0, 0.0, 0.0), 1)
+        sphere2 = Sphere(Vector3f(-2.0, 0.0, 0.0), 1)
 
-    def test_setDiffuseColor(self):
-        self.assertEqual(self.renderable.setDiffuseColor([1.0, 1.0, 1.0]), [1.0, 1.0, 1.0])
-        self.assertEqual(self.renderable.setDiffuseColor([0.0, 1.0, 0.34]), [0.0, 1.0, 0.34])
-        self.assertEqual(self.renderable.setDiffuseColor([-1.0, 1.0, 1.0]), [0.0, 1.0, 0.34])
-        self.assertEqual(self.renderable.setDiffuseColor([1.0, 1.2, 1.0]), [0.0, 1.0, 0.34])
-        self.assertEqual(self.renderable.setDiffuseColor(), [0.0, 1.0, 0.34])
+        self.assertEqual(sphere1.intersect(Vector3f(0, 0, 0), Vector3f(1, 0, 0)), 1.0)
+        self.assertEqual(sphere1.intersect(Vector3f(0, 0, 0), Vector3f(0, 1, 0)), "NONE")
 
-    def test_setSpecularColor(self):
-        self.assertEqual(self.renderable.setSpecularColor([1.0, 1.0, 1.0]), [1.0, 1.0, 1.0])
-        self.assertEqual(self.renderable.setSpecularColor([0.0, 1.0, 0.34]), [0.0, 1.0, 0.34])
-        self.assertEqual(self.renderable.setSpecularColor([-1.0, 1.0, 1.0]), [0.0, 1.0, 0.34])
-        self.assertEqual(self.renderable.setSpecularColor([1.0, 1.2, 1.0]), [0.0, 1.0, 0.34])
-        self.assertEqual(self.renderable.setSpecularColor(), [0.0, 1.0, 0.34])
-
-    def test_setDiffuseConstant(self):
-        self.assertEqual(self.renderable.setDiffuseConstant(1.0), 1.0)
-        self.assertEqual(self.renderable.setDiffuseConstant(0.0), 0.0)
-        self.assertEqual(self.renderable.setDiffuseConstant(-1.0), 0.0)
-        self.assertEqual(self.renderable.setDiffuseConstant(1.1), 0.0)
-        self.assertEqual(self.renderable.setDiffuseConstant(1), 0.0)
-        self.assertEqual(self.renderable.setDiffuseConstant(), 0.0)
-
-    def test_setSpecularConstant(self):
-        self.assertEqual(self.renderable.setSpecularConstant(1.0), 1.0)
-        self.assertEqual(self.renderable.setSpecularConstant(0.0), 0.0)
-        self.assertEqual(self.renderable.setSpecularConstant(-1.0), 0.0)
-        self.assertEqual(self.renderable.setSpecularConstant(1.1), 0.0)
-        self.assertEqual(self.renderable.setSpecularConstant(1), 0.0)
-        self.assertEqual(self.renderable.setSpecularConstant(), 0.0)
-
-    def test_setShininess(self):
-        self.assertEqual(self.renderable.setShininess(1), 1)
-        self.assertEqual(self.renderable.setShininess(0.0), 1)
-        self.assertEqual(self.renderable.setShininess(-1), 1)
-        self.assertEqual(self.renderable.setShininess(11), 11)
-        self.assertEqual(self.renderable.setShininess(102), 102)
-        self.assertEqual(self.renderable.setShininess(), 102)
+        self.assertEqual(sphere2.intersect(Vector3f(0, 0, 0), Vector3f(1, 0, 0)), "NONE")
 
     def test_normalAt(self):
-        self.fail("Not yet implemented")
+        sphere1 = Sphere(Vector3f(2.0, 0.0, 0.0), 1)
+
+        self.assertEqual(sphere1.normalAt(Vector3f(1, 0, 0)).toList(), [-1, 0, 0])
+        self.assertEqual(sphere1.normalAt(Vector3f(1, 0.1, 0)).toList(), Vector3f(-1, 0.1, 0.0).toList())
+        self.assertEqual(sphere1.normalAt(Vector3f(5, 0, 0)).toList(), [3, 0, 0])
 
     def test_setRadius(self):
-        self.fail("Not yet implemented")
-
-    def test_setOrigin(self):
-        self.fail("Not yet implemented")
+        self.assertEqual(self.renderable.setRadius(1.0), 1.0)
+        self.assertEqual(self.renderable.setRadius(0.0), 1.0)
+        self.assertEqual(self.renderable.setRadius(-1.0), 1.0)
+        self.assertEqual(self.renderable.setRadius(1.1), 1.1)
+        self.assertEqual(self.renderable.setRadius(0.0005), 0.0005)
+        self.assertEqual(self.renderable.setRadius(), 0.0005)
+        self.assertEqual(self.renderable.setRadius(1), 1.0)

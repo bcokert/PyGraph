@@ -14,6 +14,9 @@ def addTest(module):
     all_tests.append(unittest.TestLoader().loadTestsFromModule(mod))
 
 #####################################################################################
+"""Suite_MoreMath"""
+addTest('pygraph.test.utility.MoreMath')
+
 """Suite_Draw"""
 addTest('pygraph.test.draw.shapes.BasicShapes')
 

@@ -7,9 +7,10 @@ class TestRenderablePrimitive(unittest.TestCase):
 
     def setUp(self):
         self.renderable = RenderablePrimitive()
+        self.renderable2 = RenderablePrimitive()
 
     def test_interface(self):
-        for func in ('intersect', 'setDiffuseColor', 'setSpecularColor', 'setDiffuseConstant', 'setSpecularConstant', 'setShininess', 'normalAt'):
+        for func in ('intersect', 'setDiffuseColor', 'setSpecularColor', 'setDiffuseConstant', 'setSpecularConstant', 'setShininess', 'normalAt', 'setOrigin'):
             self.assertTrue(hasattr(self.renderable, func) and callable(getattr(self.renderable, func)), "Interface requires function: " + func)
 
     def test_intersect(self):
@@ -53,6 +54,10 @@ class TestRenderablePrimitive(unittest.TestCase):
         self.assertEqual(self.renderable.setShininess(11), 11)
         self.assertEqual(self.renderable.setShininess(102), 102)
         self.assertEqual(self.renderable.setShininess(), 102)
+
+    def test_setOrigin(self):
+        self.assertEqual(self.renderable2.setOrigin().toList(), [0.0, 0.0, 0.0])
+        self.assertEqual(self.renderable2.setOrigin(Vector3f(1, 2, 3)).toList(), [1.0, 2.0, 3.0])
 
     def test_normalAt(self):
         self.assertEqual(self.renderable.normalAt(Vector3f(1.0, 1.0, 1.0)), "NONE")

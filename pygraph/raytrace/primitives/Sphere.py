@@ -1,6 +1,7 @@
 import math
 from pygraph.raytrace.primitives.RenderablePrimitive import RenderablePrimitive
 from pygraph.utility.Vector3f import Vector3f
+from pygraph.utility.MoreMath import solveQuadratic
 
 class Sphere(RenderablePrimitive):
     """A class that represents perfect spheres
@@ -21,13 +22,27 @@ class Sphere(RenderablePrimitive):
         >>> sphere.normalAt(intersect) # A Vector3f
     """
 
-    def __init__(self):
-        super(Sphere, self).__init__()
-        self.radius = 1.0
-        self.origin = Vector3f(0, 0, 0)
+    def __init__(self, origin="NONE", radius=1.0):
+        super(Sphere, self).__init__(origin=origin)
+
+        self.setRadius(radius)
 
     def intersect(self, origin, ray):
-        return "NONE"
+        origin_sub_sphere = origin - self.origin
+        b = 2 * origin_sub_sphere.dot(ray)
+        c = origin_sub_sphere.dot(origin_sub_sphere) - self.radius*self.radius
+
+        intersect = "NONE"
+        for col in solveQuadratic(1, b, c):
+            if (col != "NONE" and col > 0.0):
+                if (intersect == "NONE" or col < intersect):
+                    intersect = col
+        return intersect
 
     def normalAt(self, position):
-        return "NONE"
+        return (position - self.origin) * (1/self.radius)
+
+    def setRadius(self, radius="NONE"):
+        if (type(radius) in [int, float] and radius > 0.0):
+            self.radius = float(radius)
+        return self.radius

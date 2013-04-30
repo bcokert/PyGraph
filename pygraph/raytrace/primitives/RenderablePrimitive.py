@@ -1,4 +1,5 @@
 import math
+from pygraph.utility.Vector3f import Vector3f
 
 class RenderablePrimitive(object):
     """A class that baseclasses renderable objects, like spheres or quads. Provides the main interface, and the property setters/getters
@@ -16,12 +17,16 @@ class RenderablePrimitive(object):
         >>> "This class should be extended by a primitive. See an extending primitive for usage"
     """
 
-    def __init__(self):
+    def __init__(self, origin="NONE"):
         self.diffuse_color = [0.8, 0.8, 0.8]
         self.diffuse_constant = 1.0
         self.specular_color = [1.0, 1.0, 1.0]
         self.specular_constant = 1.0
-        self.shininess = 50
+        self.shininess = 100
+
+        self.origin = origin
+        if (self.origin=="NONE" or not(isinstance(self.origin, Vector3f))):
+            self.origin = Vector3f(0,0,0)
 
     def setDiffuseColor(self, color="NONE"):
         if (self._isColor(color)):
@@ -53,6 +58,11 @@ class RenderablePrimitive(object):
 
     def normalAt(self, position):
         return "NONE"
+
+    def setOrigin(self, origin="NONE"):
+        if (isinstance(origin, Vector3f)):
+            self.origin = origin
+        return self.origin
 
     def _isColor(self, color):
         if (type(color) == list and len(color) == 3):
